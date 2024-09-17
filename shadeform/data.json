@@ -1,0 +1,7 @@
+{
+  "cloud": "hyperstack",
+  "region": "canada-1",
+  "shade_instance_type": "A6000",
+  "shade_cloud": true,
+  "name": "quickstart"
+}
