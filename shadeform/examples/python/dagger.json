@@ -1,0 +1,11 @@
+{
+  "name": "python",
+  "sdk": "python",
+  "dependencies": [
+    {
+      "name": "shadeform",
+      "source": "../.."
+    }
+  ],
+  "engineVersion": "v0.13.0"
+}

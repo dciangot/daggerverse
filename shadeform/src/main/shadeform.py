@@ -1,9 +1,11 @@
-from dagger import Container, dag, function, object_type, Secret, File, Directory, DefaultPath, CacheVolume
+from dagger import Container, dag, function, object_type, Secret, File, Directory, DefaultPath, CacheVolume, JSON
+
 from typing import Self, Annotated, Tuple
 
 
 from datetime import datetime
 import time
+import json
 
 
 @object_type
@@ -13,19 +15,22 @@ class Shadeform:
     vm_id: str | None
     ssh_key: File | None
     cache: CacheVolume
+    template_file: File
+
 
     @classmethod
     async def create(
         cls,
         name: str,
-    shade_token: Secret,
-    vm_id: str | None,
-    ssh_key: File | None,
-        cache: CacheVolume | None
+        shade_token: Secret,
+        vm_id: str | None,
+        ssh_key: File | None,
+        cache: CacheVolume | None,
+        template_file: Annotated[File, DefaultPath("./vm-template.json")]
     ):
         if cache is None:
             cache = dag.cache_volume(name)
-        return cls(name=name,ssh_key=ssh_key,cache=cache,shade_token=shade_token,vm_id=vm_id)
+        return cls(name=name,ssh_key=ssh_key,cache=cache,shade_token=shade_token,vm_id=vm_id, template_file=template_file)
 
     @function
     def client(self) -> Container:
@@ -49,15 +54,14 @@ class Shadeform:
         """Returns a container that echoes whatever string argument is provided"""
         token = await self.shade_token.plaintext()
 
-        config_file = f"""
-{{
-  "cloud": "{cloud}",
-  "region": "{region}",
-  "shade_instance_type": "{shade_instance_type}",
-  "shade_cloud": {shade_cloud},
-  "name": "{self.name}"
-}}
-"""
+        config_file = {
+            "cloud": cloud,
+            "region": region,
+            "shade_instance_type": shade_instance_type,
+            "shade_cloud": shade_cloud,
+            "name": self.name
+        }
+
         dont_exist = await (
             self.client()
             .with_exec(["sh", "-c", "jq -r .id /cache/vm_id.json; echo -n $? > /exit_code"])
@@ -69,7 +73,10 @@ class Shadeform:
             try:
                 return await (
                         self.client()
-                         .with_new_file(path="/opt/data.json", contents=config_file)
+                         .with_file(
+                            path="/opt/data.json",
+                            source=dag.dagger_templates().compile_template(json_values=JSON(json.dumps(config_file)), template_file=self.template_file)
+                         )
                          .with_exec(["cat", "/opt/data.json"])
                          .with_exec([
                                 "curl", "--fail-with-body",
@@ -82,8 +89,11 @@ class Shadeform:
                             ])
                         .with_exec(["jq", "-r",".id", "/cache/vm_id.json"])
                         )
-            except:
-                raise Exception(await self.client().with_exec(["cat", "/cache/vm_id.json"]).stdout())
+            except Exception as ex:
+                try: 
+                    raise Exception(await self.client().with_exec(["cat", "/cache/vm_id.json"]).stdout())
+                except:
+                    raise ex
         else:
             return await (
                     self.client()
