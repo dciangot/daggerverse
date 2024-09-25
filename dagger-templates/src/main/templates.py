@@ -1,5 +1,5 @@
-from dagger import JSON, Container, dag, function, object_type, Secret, File, Directory, DefaultPath, CacheVolume, Doc
-from typing import Optional, Self, Annotated, Tuple
+from dagger import JSON, dag, function, object_type, File, Doc
+from typing import Annotated
 
 
 compileCode = """
@@ -22,14 +22,15 @@ with open("/output", 'w') as f:
 @object_type
 class DaggerTemplates:
     """
-    
+    Take a Jinja template and a JSON string
+    Return a File with the compiled template
     """
 
     @function
     def compile_template(
             self,
-            json_values: Annotated[JSON, Doc("")],
-            template_file: Annotated[File, Doc("")] 
+            json_values: Annotated[JSON, Doc("JSON string containing values to be filled in")],
+            template_file: Annotated[File, Doc("Jinja template file to be compiled")] 
         ) -> File:
         """
 
