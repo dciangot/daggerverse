@@ -1,0 +1,6 @@
+{
+  "name": "commanders",
+  "sdk": "python",
+  "source": ".",
+  "engineVersion": "v0.13.3"
+}
