@@ -21,7 +21,6 @@ if appropriate. All modules should have a short description.
 # For example, to import from src/main/main.py:
 # >>> from .main import Commanders as Commanders
 
-import dagger
 from dagger import dag, function, object_type
 
 commanders = {
@@ -36,7 +35,7 @@ As part of his Dagger exploration, Diego has also integrated an end-to-end test 
 which has gotten rave reviews from the many Daggernauts seeking best practices with K8s.
         """,
         "says": "Start with simple CI/testing implementations, feel the power of it, and then extend to any workflow that makes sense to you."
-    }
+    },
     "aweris": {
         "name": "Ali AKCA",
         "job": "Freelancer / Consultant",
