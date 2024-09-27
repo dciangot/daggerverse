@@ -1,16 +1,8 @@
 """A generated module for Commanders functions
 
-This module has been generated via dagger init and serves as a reference to
-basic module structure as you get started with Dagger.
+This is to explore Commander super-powers and to hear their advice.
 
-Two functions have been pre-created. You can modify, delete, or add to them,
-as needed. They demonstrate usage of arguments and return types using simple
-echo and grep commands. The functions can be called from the dagger CLI or
-from one of the SDKs.
-
-The first line in this comment block is a short description line and the
-rest is a long description with more detail on the module's purpose or usage,
-if appropriate. All modules should have a short description.
+Do not use it improperly, we will find you.
 """
 
 # NOTE: it's recommended to move your code into other files in this package
@@ -162,17 +154,24 @@ Thanabodee created the experimental Elixir SDK and is exploring using Dagger for
 class Commanders:
     @function
     def commander(self, username: str) -> str:
-        """Returns a container that echoes whatever string argument is provided"""
+        """
+        Call your favorite commander to see his/her capabilities 
+        """
         cmder = commanders[username]
         return f"\033[1;34m{cmder['name']} - {cmder['year']} Commander - {cmder['job']}\033[0m\n\033[0;32m{cmder['description']}\033[0m"
 
     @function
     def commander_says(self, username: str) -> str:
-        """Returns a container that echoes whatever string argument is provided"""
+        """
+        Ask your favorite commander for advice
+        """
         cmder = commanders[username]
         return f"\033[1;34m Commander {cmder['name']} always says: \033[0m\033[0;32m{cmder['says']}\033[0m"
 
     @function
     def list_commanders(self) -> str:
-        """Returns a container that echoes whatever string argument is provided"""
+        """
+        List all commanders
+        """
         return f"{list(commanders.keys())}"
+
