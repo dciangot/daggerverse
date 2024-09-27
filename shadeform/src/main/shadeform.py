@@ -10,6 +10,9 @@ import json
 
 @object_type
 class Shadeform:
+    """
+
+    """
     name: str
     shade_token: Secret
     vm_id: str | None

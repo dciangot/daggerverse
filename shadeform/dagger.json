@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "dagger-templates",
-      "source": "../dagger-templates"
+      "source": "github.com/dciangot/daggerverse/dagger-templates@bbefe24b817386ffcc4b64d6823c05e418d36a60"
     }
   ],
   "source": ".",
