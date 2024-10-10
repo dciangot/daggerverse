@@ -86,14 +86,15 @@ class Shadeform:
                             path="/opt/data.json",
                             source=dag.dagger_templates().compile_template(json_values=JSON(json.dumps(config_file)), template_file=self.template_file)
                          )
-                         .with_exec(["cat", "/opt/data.json"])
+                         .with_exec(["cp", "/opt/data.json", "/cache/data.json"])
+                         .with_exec(["cat", "/cache/data.json"])
                          .with_exec([
                                 "curl", "--fail-with-body",
                                 "--request", "POST",
                                 "--url", "https://api.shadeform.ai/v1/instances/create",
                                 "--header", "Content-Type: application/json",
                                 "--header", f"X-API-KEY: {token}",
-                                "--data", "@/opt/data.json",
+                                "--data", "@/cache/data.json",
                                 "-o", "/cache/vm_id.json"
                             ])
                         .with_exec(["jq", "-r",".id", "/cache/vm_id.json"])
@@ -141,6 +142,33 @@ class Shadeform:
                     "--header", f"X-API-KEY: {token}",
                     "-o", "/cache/vm_info.json"
                 ]).stdout()
+            )
+        except:
+            raise Exception(await self.client().with_exec(["cat", "/cache/vm_info.json"]).stdout())
+
+    @function
+    async def get_available_list(
+        self,
+        gpu_type: str,
+        n_gpus: int
+        ) -> str:
+        """
+        Return a list of available instances with the indicated boards sorted by price 
+        """
+
+        token = await self.shade_token.plaintext()
+
+        try:
+            return await (
+             self.client()
+             .with_exec([
+                    "curl", "--fail-with-body",
+                    "--request", "GET",
+                    "--url", f"https://api.shadeform.ai/v1/instances/types?gpu_type={gpu_type}&num_gpus={n_gpus}&available=true&sort=price",
+                    "--header", f"X-API-KEY: {token}",
+                    "-o", "/cache/vm_list.json"
+                ])
+            .with_exec(["jq", "-r",".instance_types[0]", "/cache/vm_list.json"]).stdout()
             )
         except:
             raise Exception(await self.client().with_exec(["cat", "/cache/vm_info.json"]).stdout())

@@ -2,7 +2,7 @@
   "cloud": "{{cloud}}",
   "region": "{{region}}", 
   "shade_instance_type": "{{shade_instance_type}}",
-  "shade_cloud": "{{shade_cloud}}",
+  "shade_cloud": {{shade_cloud}},
   "name": "{{name}}"
 }
 
