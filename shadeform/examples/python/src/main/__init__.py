@@ -1,19 +1,19 @@
-"""A generated module for Python functions
+import dagger
+from dagger import dag, function, object_type
 
-This module has been generated via dagger init and serves as a reference to
-basic module structure as you get started with Dagger.
+# NOTE: it's recommended to move your code into other files in this package
+# and keep __init__.py for imports only, according to Python's convention.
+# The only requirement is that Dagger needs to be able to import a package
+# called "main", so as long as the files are imported here, they should be
+# available to Dagger.
 
-Two functions have been pre-created. You can modify, delete, or add to them,
-as needed. They demonstrate usage of arguments and return types using simple
-echo and grep commands. The functions can be called from the dagger CLI or
-from one of the SDKs.
 
-The first line in this comment block is a short description line and the
-rest is a long description with more detail on the module's purpose or usage,
-if appropriate. All modules should have a short description.
-"""
+@object_type
+class Python:
+    @function
+    async def example_create(self, name: str, shade_token: dagger.Secret, cloud: str, region: str, shade_instance_type: str, shade_cloud: str) -> str:
 
-__all__ = ["helix"]
-
-# Import the submodules
-from . import helix
+        return await (
+            dag.shadeform(name, shade_token)
+            .create_n_check(cloud, region, shade_instance_type, shade_cloud)
+        )
