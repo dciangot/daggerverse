@@ -11,7 +11,9 @@ import json
 @object_type
 class Shadeform:
     """
-
+    Dagger module to manage the lifecycle of a Shadeform VM. Handy for integration in data-science pipelines or in 
+    any DAG graph when one or more tasks can benefit from the execution on a GPU machine. See examples for a demonstration
+    on how to use it
     """
     name: str
     shade_token: Secret
@@ -31,12 +33,18 @@ class Shadeform:
         cache: CacheVolume | None,
         template_file: Annotated[File, DefaultPath("./vm-template.json")]
     ):
+        """ 
+        Initialize module with cache associated to the VM name
+        """
         if cache is None:
             cache = dag.cache_volume(name)
         return cls(name=name,ssh_key=ssh_key,cache=cache,shade_token=shade_token,vm_id=vm_id, template_file=template_file)
 
     @function
     def client(self) -> Container:
+        """
+        Return a CURL debug client with cache (vm information) mounted.
+        """
         return (
             dag.container()
             .from_("alpine:latest")
@@ -45,7 +53,6 @@ class Shadeform:
             .with_mounted_cache(path="/cache", cache=self.cache)
         )
 
-    # TODO: what happens if multiple create are done?
     @function
     async def create_vm(
             self, 
@@ -54,7 +61,10 @@ class Shadeform:
             shade_instance_type: str,
             shade_cloud: str,
         ) -> Container:
-        """Returns a container that echoes whatever string argument is provided"""
+        """
+        Returns a container executing all the needed steps for creating a machine starting from passed parameters
+        """
+
         token = await self.shade_token.plaintext()
 
         config_file = {
@@ -105,7 +115,9 @@ class Shadeform:
 
     @function
     async def get_vm_id(self) -> str:
-        """Returns lines that match a pattern in the files of the provided Directory"""
+        """
+        Return the VM ID
+        """
 
         return await (
             self.client()
@@ -116,6 +128,10 @@ class Shadeform:
     async def get_vm_info(
         self
         ) -> str:
+        """
+        Return the VM info JSON 
+        """
+
         token = await self.shade_token.plaintext()
         id = await self.get_vm_id()
 
@@ -135,6 +151,9 @@ class Shadeform:
 
     @function
     async def get_vm_status(self) -> str:
+        """
+        Print the VM status 
+        """
 
         await self.get_vm_info()
 
@@ -146,6 +165,9 @@ class Shadeform:
 
     @function
     async def get_vm_ip(self) -> str:
+        """
+        Print the VM IP 
+        """
 
         await self.get_vm_info()
 
@@ -157,6 +179,9 @@ class Shadeform:
 
     @function
     async def get_vm_user(self) -> str:
+        """
+        Print the VM user to use for SSH connection
+        """
 
         await self.get_vm_info()
 
@@ -168,6 +193,9 @@ class Shadeform:
 
     @function
     async def vm_ready(self, max_retries: int = 10) -> str:
+        """
+        Wait for VM to be ready and return its ID
+        """
 
         status = ""
         retries = 0
@@ -188,9 +216,28 @@ class Shadeform:
         )
 
     @function
+    async def create_n_check(
+            self,
+            cloud: str = "hyperstack",
+            region: str = "canada-1",
+            shade_instance_type: str = "A6000",
+            shade_cloud: str = "true",
+        ) -> str:
+        """
+        Create a VM and wait for its creation to succeed
+        """
+        await self.create_vm(cloud, region, shade_instance_type, shade_cloud) 
+        
+        return await self.vm_ready()
+
+
+    @function
     async def delete_vm(
         self
         ) -> str:
+        """
+        Delete VM
+        """
 
         token = await self.shade_token.plaintext()
         id = await self.get_vm_id()
@@ -219,7 +266,9 @@ class Shadeform:
         command: str,
         ssh_key: File,
         ) -> str:
-        """ """
+        """
+        execute the provided through automatic ssh command 
+        """
         host = await self.get_vm_ip()
         ssh_user = await self.get_vm_user()
     
@@ -237,17 +286,4 @@ class Shadeform:
                 ]).stdout()
         )
 
-
-    @function
-    async def create_n_check(
-            self,
-            cloud: str = "hyperstack",
-            region: str = "canada-1",
-            shade_instance_type: str = "A6000",
-            shade_cloud: str = "true",
-        ) -> str:
-        """ """
-        await self.create_vm(cloud, region, shade_instance_type, shade_cloud) 
-        
-        return await self.vm_ready()
 
