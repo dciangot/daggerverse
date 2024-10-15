@@ -12,7 +12,7 @@ from collections.abc import Coroutine
 @object_type
 class Python:
     @function
-    async def shadeform__create_n_check(
+    async def shadeform_create_n_check(
             self,
             name: str,
             shade_token: dagger.Secret,
