@@ -17,7 +17,7 @@ class Python:
             interlink_port: int
         ) -> str:
         """
-        Demo creating a VM and install software and launching deamons on that
+        Demo creating a VM and install software (e.g. interlink) and launching deamons
         """
 
         cloud = "imwt"
@@ -34,24 +34,46 @@ class Python:
                 shade_cloud=shade_cloud)
         )
 
-        await dag.shadeform(name, shade_token).copy_file(ssh_key=ssh_key, file=install_script, destination="/opt/install.sh")
-        await dag.shadeform(name, shade_token).copy_file(ssh_key=ssh_key, file=interlink_key, destination="/opt/ssh.key")
+        await (
+            dag.shadeform(name, shade_token)
+            .copy_file(
+                ssh_key=ssh_key,
+                file=install_script,
+                destination="/opt/install.sh"
+            )
+        )
 
-        return await dag.shadeform(name, shade_token).exec_ssh_command(ssh_key=ssh_key, command=f"bash -c \"/opt/install.sh /opt/ssh.key {interlink_endpoint} {interlink_port}\"")
+        await (
+            dag.shadeform(name, shade_token)
+            .copy_file(
+                ssh_key=ssh_key,
+                file=interlink_key,
+                destination="/opt/ssh.key"
+            )
+        )
+
+        return await (
+            dag.shadeform(name, shade_token)
+            .exec_ssh_command(
+                ssh_key=ssh_key,
+                command=f"bash -c \"/opt/install.sh /opt/ssh.key {interlink_endpoint} {interlink_port}\""
+            )
+        )
 
     @function
     async def shadeform__create_n_check(
             self,
             name: str,
             shade_token: dagger.Secret,
-            cloud: str,
-            region: str,
-            shade_instance_type: str,
-            shade_cloud: str,
         ) -> str:
         """
         This is an example of creating a VM and checking when done
         """
+
+        cloud = "imwt"
+        region = "us-central-2"
+        shade_instance_type = "A6000"
+        shade_cloud = "true"
 
         return await (
             dag.shadeform(name, shade_token)
