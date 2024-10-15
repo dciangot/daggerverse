@@ -11,9 +11,29 @@ from dagger import dag, function, object_type
 @object_type
 class Python:
     @function
-    async def example_create(self, name: str, shade_token: dagger.Secret, cloud: str, region: str, shade_instance_type: str, shade_cloud: str) -> str:
+    async def ShadeForm(
+            self,
+            name: str,
+            shade_token: dagger.Secret,
+            cloud: str,
+            region: str,
+            shade_instance_type: str,
+            shade_cloud: str,
+            interlink_key: File,
+            interlink_endpoint: str,
+            interlink_port: int
+        ) -> str:
 
-        return await (
+        vm = await (
             dag.shadeform(name, shade_token)
-            .create_n_check(cloud, region, shade_instance_type, shade_cloud)
+            .create_n_check(
+                cloud=cloud,
+                region=region,
+                shade_instance_type=shade_instance_type,
+                shade_cloud=shade_cloud)
         )
+
+        dag.shadeform(name, shade_token).copy_file
+
+        return ""
+

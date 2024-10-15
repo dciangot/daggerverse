@@ -310,4 +310,57 @@ class Shadeform:
                 ]).stdout()
         )
 
+    @function
+    async def copy_file(
+        self,
+        ssh_key: File,
+        file: File,
+        destination: str,
+        ) -> str:
+        """
+        Copy a local file to the remote VM
+        """
+        host = await self.get_vm_ip()
+        ssh_user = await self.get_vm_user()
+    
+        return await (
+            dag.container()
+                .from_("ubuntu")
+                .with_exec(["bash", "-c", "apt update && apt install -y openssh-client"])
+                .with_mounted_file(path="/opt/key.key",source=ssh_key)
+                .with_mounted_file(path="/opt/file",source=file)
+                .with_exec([
+                    "scp",
+                    "-i", "/opt/key.key",
+                    "-o", "StrictHostKeyChecking=no",
+                    "/opt/file", f"{ssh_user.strip('\n')}@{host.strip('\n')}:{destination}"
+                ]).stdout()
+        )
 
+    @function
+    async def copy_dir(
+        self,
+        ssh_key: File,
+        dir: Directory,
+        destination: str,
+        ) -> str:
+        """
+        Copy a local directory to the remote VM
+        """
+        host = await self.get_vm_ip()
+        ssh_user = await self.get_vm_user()
+    
+        return await (
+            dag.container()
+                .from_("ubuntu")
+                .with_exec(["bash", "-c", "apt update && apt install -y openssh-client"])
+                .with_mounted_file(path="/opt/key.key",source=ssh_key)
+                .with_mounted_directory(path="/opt/dir",source=dir)
+                .with_exec([
+                    "scp",
+                    "-r",
+                    "-i", "/opt/key.key",
+                    "-o", "StrictHostKeyChecking=no",
+                    "/opt/dir", f"{ssh_user.strip('\n')}@{host.strip('\n')}:{destination}"
+                ]).stdout()
+        )
