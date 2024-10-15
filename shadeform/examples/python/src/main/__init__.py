@@ -20,12 +20,12 @@ class Python:
             region: str,
             shade_instance_type: str,
             shade_cloud: str,
-            interlink_key: File,
-            interlink_endpoint: str,
-            interlink_port: int
+            # interlink_key: File,
+            # interlink_endpoint: str,
+            # interlink_port: int
         ) -> str:
 
-        vm = await (
+        return await (
             dag.shadeform(name, shade_token)
             .create_n_check(
                 cloud=cloud,
@@ -34,7 +34,4 @@ class Python:
                 shade_cloud=shade_cloud)
         )
 
-        dag.shadeform(name, shade_token).copy_file
-
-        return ""
 
