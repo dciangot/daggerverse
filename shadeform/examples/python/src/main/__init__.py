@@ -11,7 +11,7 @@ from dagger import dag, function, object_type
 @object_type
 class Python:
     @function
-    async def ShadeForm(
+    async def shadeform(
             self,
             name: str,
             shade_token: dagger.Secret,
