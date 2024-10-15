@@ -24,6 +24,9 @@ class Python:
             # interlink_endpoint: str,
             # interlink_port: int
         ) -> str:
+        """
+        This is an example of creating a VM and checking when done
+        """
 
         return await (
             dag.shadeform(name, shade_token)
