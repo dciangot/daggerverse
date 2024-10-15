@@ -1,5 +1,6 @@
 import dagger
 from dagger import dag, function, object_type
+from collections.abc import Coroutine
 
 # NOTE: it's recommended to move your code into other files in this package
 # and keep __init__.py for imports only, according to Python's convention.
