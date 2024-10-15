@@ -11,7 +11,7 @@ from dagger import dag, function, object_type
 @object_type
 class Python:
     @function
-    async def shadeform(
+    async def shadeform__create_n_check(
             self,
             name: str,
             shade_token: dagger.Secret,
