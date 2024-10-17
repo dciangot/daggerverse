@@ -1,4 +1,5 @@
 import dagger
+import time
 from dagger import dag, function, object_type
 from collections.abc import Coroutine
 
@@ -20,11 +21,12 @@ class Python:
         Demo creating a VM and install software (e.g. interlink) and launching deamons
         """
 
-        cloud = "imwt"
-        region = "us-central-2"
+        cloud = "hyperstack"
+        region = "canada-1"
         shade_instance_type = "A6000"
         shade_cloud = "true"
         
+        # Create a VM and wait for it to be ready
         await (
             dag.shadeform(name, shade_token)
             .create_n_check(
@@ -34,30 +36,53 @@ class Python:
                 shade_cloud=shade_cloud)
         )
 
-        await (
-            dag.shadeform(name, shade_token)
-            .copy_file(
-                ssh_key=ssh_key,
-                file=install_script,
-                destination="/opt/install.sh"
+        #time.sleep(120)
+
+        # Copy the local install script on the VM
+        print (
+            await (
+                dag.shadeform(name, shade_token)
+                .copy_file(
+                    ssh_key=ssh_key,
+                    file=install_script,
+                    destination="/tmp/install.sh"
+                )
             )
         )
 
-        await (
-            dag.shadeform(name, shade_token)
-            .copy_file(
-                ssh_key=ssh_key,
-                file=interlink_key,
-                destination="/opt/ssh.key"
+        # Copy additional files
+        print( 
+            await (
+                dag.shadeform(name, shade_token)
+                .copy_file(
+                    ssh_key=ssh_key,
+                    file=interlink_key,
+                    destination="/tmp/ssh.key"
+                )
             )
         )
 
+        # Execute the installation script
         return await (
             dag.shadeform(name, shade_token)
             .exec_ssh_command(
                 ssh_key=ssh_key,
-                command=f"bash -c \"/opt/install.sh /opt/ssh.key {interlink_endpoint} {interlink_port}\""
+                command=f"bash -c \"/tmp/install.sh start /tmp/ssh.key {interlink_endpoint} {interlink_port}\""
             )
+        )
+
+    @function
+    async def shadeform__delete_vm(
+            self,
+            name: str,
+            shade_token: dagger.Secret,
+        ) -> str:
+        """
+        This is an example of deleting a VM
+        """
+        return await (
+            dag.shadeform(name, shade_token)
+            .delete_vm()
         )
 
     @function

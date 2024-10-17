@@ -50,6 +50,14 @@ class Shadeform:
         )
 
     @function
+    async def exists(self):
+
+        return await (
+                    self.client()
+                    .with_exec(["jq", "-r",".id", "/cache/vm_id.json"])
+                    )
+
+    @function
     async def create_vm(
             self, 
             cloud: str,
@@ -71,14 +79,10 @@ class Shadeform:
             "name": self.name
         }
 
-        dont_exist = await (
-            self.client()
-            .with_exec(["sh", "-c", "jq -r .id /cache/vm_id.json; echo -n $? > /exit_code"])
-            .file("/exit_code")
-            .contents()
-        )
-        
-        if dont_exist != 0:
+
+        try:
+            await self.exists()
+        except: 
             try:
                 return await (
                         self.client()
@@ -104,11 +108,7 @@ class Shadeform:
                     raise Exception(await self.client().with_exec(["cat", "/cache/vm_id.json"]).stdout())
                 except:
                     raise ex
-        else:
-            return await (
-                    self.client()
-                    .with_exec(["jq", "-r",".id", "/cache/vm_id.json"])
-                    )
+        return dag.container()
 
     @function
     async def get_vm_id(self) -> str:
@@ -267,22 +267,18 @@ class Shadeform:
         id = await self.get_vm_id()
 
 
-        await (
+        return await (
          self.client()
             .with_exec([
-                "curl",
+                "curl", "--fail-with-body",
                 "--request", "POST",
                 "--url", f"https://api.shadeform.ai/v1/instances/{id.strip('\n')}/delete",
                 "--header", f"X-API-KEY: {token}"
             ])
+            .with_exec(["sh", "-c", "rm /cache/vm_id.json"])
             .stdout()
         )
 
-        return await (
-         self.client()
-            .with_exec(["rm","-r","/cache/*"]) 
-            .stdout()
-        )
 
     @function
     async def exec_ssh_command(
