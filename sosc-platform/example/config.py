@@ -10,8 +10,14 @@ c.ServerProxy.servers = {
         # }
     },
     "object-storage": {
-        # "command": ["minio", "server", "/home/jovyan/minio", "--console-address", ":9001"],
-        "port": 9001
+        "command": [
+            "minio",
+            "server",
+            "/home/jovyan/persistent_data/minio",
+            "--console-address",
+            ":9001",
+        ],
+        "port": 9001,
         # "launcher_entry": {
         #        "icon_path": "https://min.io/resources/img/logo.svg",
         # }
