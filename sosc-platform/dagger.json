@@ -1,0 +1,6 @@
+{
+  "name": "sosc-platform",
+  "engineVersion": "v0.14.0",
+  "sdk": "python",
+  "source": "."
+}

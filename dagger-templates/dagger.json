@@ -2,5 +2,5 @@
   "name": "dagger-templates",
   "sdk": "python",
   "source": ".",
-  "engineVersion": "v0.13.0"
+  "engineVersion": "v0.13.4"
 }
