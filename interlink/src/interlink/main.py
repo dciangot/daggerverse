@@ -14,6 +14,7 @@ class Interlink:
         return (
             dag.container()
             .from_("alpine/helm")
+            .with_exec(["apk", "add", "kubectl"])
             .with_mounted_file("/.kube/config", k3s.config())
             .with_mounted_file("/values.yaml", values)
             .with_env_variable("KUBECONFIG", "/.kube/config")
