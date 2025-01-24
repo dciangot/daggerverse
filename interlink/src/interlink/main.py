@@ -10,7 +10,7 @@ class Interlink:
     async def cluster_config(self, local: bool = False) -> File:
         k3s = dag.k3_s(self.name)
 
-        return k3s.config(local)
+        return k3s.config(local=local)
 
     @function
     async def interlink_cluster(self, values: File) -> Service:
