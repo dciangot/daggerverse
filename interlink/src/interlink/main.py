@@ -19,8 +19,8 @@ class Interlink:
 
         svc = await server.start()
 
-        await (
-            dag.container()
+        interlink_container = (
+            k3s.container()
             .from_("alpine/helm")
             .with_exec(["apk", "add", "kubectl"])
             .with_mounted_file("/.kube/config", k3s.config())
@@ -37,16 +37,29 @@ class Interlink:
                     "/values.yaml",
                 ]
             )
+        )
+        
+        await interlink_container.stdout()
+        import time
+        
+        # Wait for the VK to be spawned
+        time.sleep(60)
+        
+        await (
+            interlink_container
+            # .terminal()
             .with_exec(
                 [
                     "kubectl",
                     "wait",
                     "--for=condition=Ready",
-                    f"node/{vk_name}",
+                    "nodes",
+                    "--all",
                     "--timeout=300s",
                 ]
-            ).stdout()
-            
+            )
+            .stdout()
         )
+        
 
         return svc
