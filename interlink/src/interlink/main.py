@@ -13,13 +13,13 @@ class Interlink:
         return k3s.config(local=local)
 
     @function
-    async def interlink_cluster(self, values: File) -> Service:
+    async def interlink_cluster(self, values: File, vk_name: str) -> Service:
         k3s = dag.k3_s(self.name)
         server = k3s.server()
 
         svc = await server.start()
 
-        (
+        await (
             dag.container()
             .from_("alpine/helm")
             .with_exec(["apk", "add", "kubectl"])
@@ -37,6 +37,16 @@ class Interlink:
                     "/values.yaml",
                 ]
             )
+            .with_exec(
+                [
+                    "kubectl",
+                    "wait",
+                    "--for=condition=Ready",
+                    f"node/{vk_name}",
+                    "--timeout=300s",
+                ]
+            ).stdout()
+            
         )
 
         return svc
