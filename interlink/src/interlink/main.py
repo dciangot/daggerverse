@@ -13,7 +13,7 @@ class Interlink:
         return k3s.config(local=local)
 
     @function
-    async def interlink_cluster(self, values: File, vk_name: str) -> Service:
+    async def interlink_cluster(self, values: File, wait: int = 60) -> Service:
         k3s = dag.k3_s(self.name)
         server = k3s.server()
 
@@ -38,13 +38,14 @@ class Interlink:
                 ]
             )
         )
-        
+
+        # Force the interlink container to be created
         await interlink_container.stdout()
         import time
-        
+
         # Wait for the VK to be spawned
-        time.sleep(60)
-        
+        time.sleep(wait)
+
         await (
             interlink_container
             # .terminal()
@@ -57,9 +58,7 @@ class Interlink:
                     "--all",
                     "--timeout=300s",
                 ]
-            )
-            .stdout()
+            ).stdout()
         )
-        
 
         return svc
