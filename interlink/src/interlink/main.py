@@ -1,5 +1,7 @@
-from dagger import dag, function, object_type
-from dagger.client.gen import Container, File, Service
+from typing import Annotated
+
+from dagger import Doc, dag, function, object_type
+from dagger.client.gen import File, Secret, Service
 
 
 @object_type
@@ -7,13 +9,27 @@ class Interlink:
     name: str
 
     @function
-    async def cluster_config(self, local: bool = False) -> File:
+    async def cluster_config(
+        self,
+        local: Annotated[bool, Doc("Whether to access the cluster from localhost.")] = False,
+    ) -> File:
+        """Returns the config file for the k3s cluster."""
         k3s = dag.k3_s(self.name)
 
         return k3s.config(local=local)
 
     @function
-    async def interlink_cluster(self, values: File, wait: int = 60) -> Service:
+    async def interlink_cluster(
+        self,
+        values: Annotated[Secret, Doc("Configuration file for interLink installer.")],
+        wait: Annotated[
+            int,
+            Doc(
+                "Sleep time (seconds) needed to wait for the VK to appear in the k3s cluster."
+            ),
+        ] = 60,
+    ) -> Service:
+        """Get interLink VK deployed on a k3s cluster. Returns k3s as a service."""
         k3s = dag.k3_s(self.name)
         server = k3s.server()
 
@@ -24,7 +40,7 @@ class Interlink:
             .from_("alpine/helm")
             .with_exec(["apk", "add", "kubectl"])
             .with_mounted_file("/.kube/config", k3s.config())
-            .with_mounted_file("/values.yaml", values)
+            .with_mounted_secret("/values.yaml", values)
             .with_env_variable("KUBECONFIG", "/.kube/config")
             .with_exec(
                 [
@@ -46,6 +62,7 @@ class Interlink:
         # Wait for the VK to be spawned
         time.sleep(wait)
 
+        # Wait for the VK to be ready
         await (
             interlink_container
             # .terminal()
